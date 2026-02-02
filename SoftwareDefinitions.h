@@ -8,3 +8,4 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
 WNDCLASS NewWindowClass(HBRUSH BGColor, HCURSOR Cursor, HINSTANCE hInst, HICON Icon, LPCTSTR Name, WNDPROC Procedure);
 
 void MainWndAddMenus(HWND hWnd);
+void MainWndAddWidgets(HWND hWnd);

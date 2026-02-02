@@ -71,8 +71,10 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
             break;
         default: break;
         }
+        break;
     case WM_CREATE:
         MainWndAddMenus(hWnd);
+        MainWndAddWidgets(hWnd);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -88,11 +90,20 @@ void MainWndAddMenus(HWND hWnd) {
     HMENU SubMenu = CreateMenu();
 
     AppendMenu(SubMenu, MF_STRING, OnMenuAction1, L"My profile");
-    AppendMenu(SubMenu, MF_SEPARATOR, NULL, NULL);
+    AppendMenu(SubMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(SubMenu, MF_STRING, OnMenuAction2, L"New group");
     AppendMenu(SubMenu, MF_STRING, OnMenuAction3, L"New channel");
 
     AppendMenu(RootMenu, MF_POPUP, (UINT_PTR)SubMenu, L"Profile");
 
     SetMenu(hWnd, RootMenu);
+}
+
+void MainWndAddWidgets(HWND hWnd) {
+
+    CreateWindow(L"static", L"Send message", WS_VISIBLE | WS_CHILD | ES_CENTER, 5, 5, 490, 20, hWnd, NULL, NULL, NULL);
+
+    CreateWindowA("edit", "Write a message...", WS_VISIBLE | WS_CHILD, 5, 30, 490, 20, hWnd, NULL, NULL, NULL);
+
+    CreateWindowA("button", "Send message", WS_VISIBLE | WS_CHILD | ES_CENTER, 5, 60, 120, 30, hWnd, NULL, NULL, NULL);
 }
