@@ -2,9 +2,9 @@
 #define _UNICODE
 #include <windows.h>
 #include <tchar.h>
+#include "SoftwareDefinitions.h"
 
-LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp);
-WNDCLASS NewWindowClass(HBRUSH BGColor, HCURSOR Cursor, HINSTANCE hInst, HICON Icon, LPCTSTR Name, WNDPROC Procedure);
+
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdshow) {
 
@@ -22,7 +22,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 
     CreateWindow(
         _T("MainWndClass"), 
-        _T("First c++ window"), 
+        _T("Messenger"), 
         WS_OVERLAPPEDWINDOW | WS_VISIBLE, 
         100, 100, 500, 250, 
         NULL, NULL, NULL, NULL
@@ -57,7 +57,22 @@ WNDCLASS NewWindowClass(HBRUSH BGColor, HCURSOR Cursor, HINSTANCE hInst, HICON I
 LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
     switch (msg)
     {
+    case WM_COMMAND:
+        switch (wp)
+        {
+        case OnMenuAction1:
+            MessageBoxA(hWnd, "Your username is ...", "Information", MB_OK);
+            break;
+        case OnMenuAction2:
+            MessageBoxA(hWnd, "Create group...", "Information", MB_OK);
+            break;
+        case OnMenuAction3:
+            MessageBoxA(hWnd, "Create channel...", "Information", MB_OK);
+            break;
+        default: break;
+        }
     case WM_CREATE:
+        MainWndAddMenus(hWnd);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -66,4 +81,18 @@ LRESULT CALLBACK SoftwareMainProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp
     }
 
     return 0;
+}
+
+void MainWndAddMenus(HWND hWnd) {
+    HMENU RootMenu = CreateMenu();
+    HMENU SubMenu = CreateMenu();
+
+    AppendMenu(SubMenu, MF_STRING, OnMenuAction1, L"My profile");
+    AppendMenu(SubMenu, MF_SEPARATOR, NULL, NULL);
+    AppendMenu(SubMenu, MF_STRING, OnMenuAction2, L"New group");
+    AppendMenu(SubMenu, MF_STRING, OnMenuAction3, L"New channel");
+
+    AppendMenu(RootMenu, MF_POPUP, (UINT_PTR)SubMenu, L"Profile");
+
+    SetMenu(hWnd, RootMenu);
 }
