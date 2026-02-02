@@ -16,7 +16,6 @@
 #include <bluetoothapis.h>
 #endif
 
-// Функция для запуска SFML чата (ваш исходный код)
 void runSfmlChat() {
     sf::TcpSocket socket;
 
