@@ -5,7 +5,7 @@ A lightweight **console messenger written in C++17** that supports:
 - **TCP/IP chat using SFML**
 - **Bluetooth chat using native Windows APIs**
 
-The project demonstrates low-level networking, non-blocking sockets, and Bluetooth RFCOMM communication on Windows.
+The project demonstrates low-level networking, non-blocking sockets, and Bluetooth RFCOMM communication on Windows. The goal of the project is to implement all possible types of message transmission over any distance, both with and without the Internet. Ideally, I imagine an open source messenger where you can also create groups and channels and all of the above transmits information to the user. And of course, add a beautiful interface.
 
 ---
 
