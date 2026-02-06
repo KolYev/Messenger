@@ -1,1 +1,6 @@
 Libraries/
+main.obj
+messenger.exe
+messenger.ilk
+messenger.pdb
+vs140.pdb
