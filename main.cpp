@@ -16,16 +16,19 @@
 #include <bluetoothapis.h>
 #endif
 
-// Функция для запуска SFML чата (ваш исходный код)
 void runSfmlChat() {
+    // Сокет для сетевого соединения
     sf::TcpSocket socket;
 
+    // Получаем локальный IP-адрес компьютера
     auto localIp = sf::IpAddress::getLocalAddress();
+    // Проверяем, успешно ли получен IP
     if (!localIp.has_value())
     {
         std::cout << "Failed to get local IP address\n";
         return;
     }
+    // Извлекаем значение IP-адреса
     sf::IpAddress ip = *localIp;
 
     char type;
@@ -35,13 +38,16 @@ void runSfmlChat() {
 
     if(type == 's')
     {
+        // Создаем сервер
         sf::TcpListener listener;
+        // Попытка прослушать порт 2000
         if (listener.listen(2000) != sf::Socket::Status::Done)
         {
             std::cout << "Error listening on port!\n";
             return;
         }
 
+        // Принимаем входящее соединение
         if(listener.accept(socket) != sf::Socket::Status::Done)
         {
             std::cout << "Error!\n";
@@ -49,12 +55,14 @@ void runSfmlChat() {
     }
     else if(type == 'c')
     {
+        // Подключаемся к серверу по полученному IP и порту 2000
         if(socket.connect(ip, 2000) != sf::Socket::Status::Done)
         {
             std::cout << "Error!\n";
         }
     }
 
+    // Получение имя пользователя для чата
     std::string name;
     std::cout << "Enter your name:\n";
     std::cin  >> name;
@@ -70,20 +78,27 @@ void runSfmlChat() {
 
     while (true)
     {
+        // Проверка, была ли нажата клавиша
         if (_kbhit())
         {
+            // Считываем строку с сообщением
             std::getline(std::cin, message);
             
+            // Если сообщение не пустое
             if (!message.empty())
             {
+                // Проверка команду выхода
                 if (message == "exit" || message == "quit")
                 {
                     break;
                 }
 
+                // Очищаем пакет от предыдущих данных
                 packet.clear();
+                // Упаковываем имя и сообщение в пакет
                 packet << name << message;
 
+                // Отправляем пакет через сокет
                 if (socket.send(packet) != sf::Socket::Status::Done)
                 {
                     std::cout << "Error sending message!\n";
@@ -93,43 +108,53 @@ void runSfmlChat() {
                     std::cout << "You: " << message << '\n';
                 }
 
+                // Очищаем переменную сообщения
                 message = "";
             }
         }
 
+        // Принимаем данные через сокет
         sf::Socket::Status status = socket.receive(packet);
+        // Если получено сообщение
         if (status == sf::Socket::Status::Done)
         {
+            // Переменные для распаковки данных
             std::string nameRec;
             std::string messageRec;
 
+            // Распаковываем имя и сообщение из пакета
             if (packet >> nameRec >> messageRec)
             {
+                // Выводим полученное сообщение
                 std::cout << nameRec << ": " << messageRec << '\n';
             }
         }
+        // Если соединение разорвано
         else if (status == sf::Socket::Status::Disconnected)
         {
             std::cout << "Connection lost!\n";
             break;
         }
 
+        // Небольшая задержка
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     std::cout << "SFML Chat ended.\n";
 }
 
+// BLUETOOTH чат (только для Windows)
+
 #ifdef _WIN32
 // Структура для хранения информации о Bluetooth устройствах
 struct BluetoothDevice {
-    std::string name;
-    BLUETOOTH_ADDRESS address;
-    bool isConnected;
-    bool isAuthenticated;
+    std::string name; // Имя устройства
+    BLUETOOTH_ADDRESS address; // MAC-адрес Bluetooth
+    bool isConnected; // Подключено ли устройство
+    bool isAuthenticated; // Прошло ли аутентификацию
 };
 
-// Вспомогательная функция для конвертации широкосимвольной строки в std::string
+// Конвертируем строку wstring (широкие символы) в string
 std::string wstringToString(const std::wstring& wstr) {
     if (wstr.empty()) return std::string();
     int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
@@ -138,42 +163,55 @@ std::string wstringToString(const std::wstring& wstr) {
     return str;
 }
 
-// Функция для вывода списка Bluetooth устройств
+// Поиск и вывод списка доступных Bluetooth устройств
 std::vector<BluetoothDevice> discoverBluetoothDevices() {
-    std::vector<BluetoothDevice> devices;
+    std::vector<BluetoothDevice> devices; // Вектор для хранения устройств
     
-    BLUETOOTH_FIND_RADIO_PARAMS btfrp = { sizeof(BLUETOOTH_FIND_RADIO_PARAMS) };
-    HANDLE hRadio = NULL;
+    // Параметры для поиска Bluetooth радио-адаптеров
+    BLUETOOTH_FIND_RADIO_PARAMS btfrp = { sizeof(BLUETOOTH_FIND_RADIO_PARAMS) }; // Дескриптор радио-адаптера
+    HANDLE hRadio = NULL; // Дескриптор радио-адаптера
+    // Поиск Bluetooth радио-адаптеров
     HBLUETOOTH_RADIO_FIND hFind = BluetoothFindFirstRadio(&btfrp, &hRadio);
     
+    // Если найден хотя бы один адаптер
     if (hFind != NULL) {
         do {
+            // Получаем информацию о радио-адаптере
             BLUETOOTH_RADIO_INFO radioInfo = { sizeof(BLUETOOTH_RADIO_INFO), 0 };
             if (BluetoothGetRadioInfo(hRadio, &radioInfo) == ERROR_SUCCESS) {
+                // Выводим имя радио-адаптера
                 std::wcout << L"Found radio: " << radioInfo.szName << std::endl;
                 
+                // Параметры поиска устройств
                 BLUETOOTH_DEVICE_SEARCH_PARAMS searchParams = {
                     sizeof(BLUETOOTH_DEVICE_SEARCH_PARAMS),
-                    1,  // return authenticated
-                    0,  // return remembered
-                    1,  // return unknown
-                    1,  // return connected
-                    1,  // issue inquiry
-                    15, // timeout multiplier
-                    hRadio
+                    1,  // Возвращаем аутентифицированные устройства
+                    0,  // Возвращаем запомненные устройства
+                    1,  // Возвращаем неизвестные устройства
+                    1,  // Возвращаем подключенные устройства
+                    1,  // Выполняем поиск
+                    15, // Таймаут поиска (чуть больше 15 секунд)
+                    hRadio // Дескриптор радио-адаптера
                 };
                 
+                // Информация о найденном устройстве
                 BLUETOOTH_DEVICE_INFO deviceInfo = { sizeof(BLUETOOTH_DEVICE_INFO), 0 };
+                // Начинаем поиск устройств
                 HBLUETOOTH_DEVICE_FIND hDeviceFind = BluetoothFindFirstDevice(&searchParams, &deviceInfo);
                 
+                // Если найдено хотя бы одно устройство
                 if (hDeviceFind != NULL) {
                     do {
                         BluetoothDevice device;
+                        // Конвертируем имя устройства из wstring в string
                         device.name = wstringToString(deviceInfo.szName);
+                        // Копируем адрес устройства
                         device.address = deviceInfo.Address;
+                        // Проверяем флаги подключения и аутентификации
                         device.isConnected = deviceInfo.fConnected != 0;
                         device.isAuthenticated = deviceInfo.fAuthenticated != 0;
                         
+                        // Добавляем устройство в вектор
                         devices.push_back(device);
                         
                         // Выводим информацию об устройстве
@@ -191,28 +229,35 @@ std::vector<BluetoothDevice> discoverBluetoothDevices() {
                         
                     } while (BluetoothFindNextDevice(hDeviceFind, &deviceInfo));
                     
+                    // Закрываем дескриптор поиска устройств
                     BluetoothFindDeviceClose(hDeviceFind);
                 }
             }
             
+            // Закрываем дескриптор радио-адаптера
             CloseHandle(hRadio);
-        } while (BluetoothFindNextRadio(hFind, &hRadio));
+        } while (BluetoothFindNextRadio(hFind, &hRadio)); // Ищем следующий радио-адаптер
         
+        // Закрываем дескриптор поиска радио-адаптеров
         BluetoothFindRadioClose(hFind);
     }
     
-    return devices;
+    return devices; // Возвращаем список найденных устройств
 }
 
 // Функция для создания Bluetooth сервера (слушающего сокета)
 SOCKET createBluetoothServer() {
     WSADATA wsaData;
+    // Инициализируем WinSock
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cout << "WSAStartup failed\n";
         return INVALID_SOCKET;
     }
     
     // Создаем Bluetooth сокет
+    // AF_BTH - семейство протоколов Bluetooth
+    // SOCK_STREAM - потоковый сокет (TCP-подобный)
+    // BTHPROTO_RFCOMM - протокол RFCOMM (последовательный порт поверх Bluetooth)
     SOCKET serverSocket = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
     if (serverSocket == INVALID_SOCKET) {
         std::cout << "Socket creation failed\n";
@@ -221,15 +266,15 @@ SOCKET createBluetoothServer() {
     }
     
     // Настраиваем адрес для привязки
-    SOCKADDR_BTH sa = { 0 };
-    sa.addressFamily = AF_BTH;
-    sa.port = BT_PORT_ANY;
+    SOCKADDR_BTH sa = { 0 }; // Обнуляем структуру
+    sa.addressFamily = AF_BTH; // Семейство Bluetooth
+    sa.port = BT_PORT_ANY; // Автоматический выбор порта
     
-    // Привязываем сокет
+    // Привязываем сокет к адресу
     if (bind(serverSocket, (SOCKADDR*)&sa, sizeof(sa)) == SOCKET_ERROR) {
         std::cout << "Bind failed\n";
-        closesocket(serverSocket);
-        WSACleanup();
+        closesocket(serverSocket); // Закрываем сокет
+        WSACleanup(); // Очищаем WinSock
         return INVALID_SOCKET;
     }
     
@@ -239,7 +284,7 @@ SOCKET createBluetoothServer() {
     
     std::cout << "Bluetooth server started on port: " << sa.port << std::endl;
     
-    // Начинаем прослушивание
+    // Начинаем прослушивание входящих соединений
     if (listen(serverSocket, 1) == SOCKET_ERROR) {
         std::cout << "Listen failed\n";
         closesocket(serverSocket);
@@ -248,18 +293,19 @@ SOCKET createBluetoothServer() {
     }
     
     std::cout << "Waiting for Bluetooth connection...\n";
-    return serverSocket;
+    return serverSocket; // Возвращаем дескриптор серверного сокета
 }
 
 // Функция для подключения к Bluetooth устройству
 SOCKET connectToBluetoothDevice(const BLUETOOTH_ADDRESS& address, int port = 1) {
     WSADATA wsaData;
+    // Инициализируем WinSock
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cout << "WSAStartup failed\n";
         return INVALID_SOCKET;
     }
     
-    // Создаем сокет
+    // Создаем клиентский сокет
     SOCKET clientSocket = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
     if (clientSocket == INVALID_SOCKET) {
         std::cout << "Socket creation failed\n";
@@ -269,14 +315,14 @@ SOCKET connectToBluetoothDevice(const BLUETOOTH_ADDRESS& address, int port = 1) 
     
     // Настраиваем адрес для подключения
     SOCKADDR_BTH sa = { 0 };
-    sa.addressFamily = AF_BTH;
-    sa.btAddr = address.ullLong;
-    sa.port = port;
+    sa.addressFamily = AF_BTH; // Семейство Bluetooth
+    sa.btAddr = address.ullLong; // MAC-адрес целевого устройства
+    sa.port = port; // Порт для подключения
     
-    // Подключаемся
+    // Подключаемся к устройству
     std::cout << "Connecting to Bluetooth device...\n";
     if (connect(clientSocket, (SOCKADDR*)&sa, sizeof(sa)) == SOCKET_ERROR) {
-        int error = WSAGetLastError();
+        int error = WSAGetLastError(); // Получаем код ошибки
         std::cout << "Connection failed with error: " << error << "\n";
         closesocket(clientSocket);
         WSACleanup();
@@ -284,7 +330,7 @@ SOCKET connectToBluetoothDevice(const BLUETOOTH_ADDRESS& address, int port = 1) 
     }
     
     std::cout << "Connected successfully!\n";
-    return clientSocket;
+    return clientSocket; // Возвращаем дескриптор подключенного сокета
 }
 
 // Функция для запуска Bluetooth чата
@@ -458,7 +504,6 @@ int main() {
     
     std::cout << "Program ended.\n";
     
-    // Ожидание нажатия любой клавиши перед выходом
     std::cout << "Press any key to exit...";
     _getch();
     
