@@ -16,7 +16,9 @@
 #include <bluetoothapis.h>
 #endif
 
-void runSfmlChat() {
+class TCP {
+public:
+    void runSfmlChat() {
     // Сокет для сетевого соединения
     sf::TcpSocket socket;
 
@@ -141,7 +143,9 @@ void runSfmlChat() {
     }
 
     std::cout << "SFML Chat ended.\n";
-}
+}       
+};
+
 
 // BLUETOOTH чат (только для Windows)
 
@@ -493,7 +497,8 @@ int main() {
     std::cin >> choice;
     
     if (choice == '1') {
-        runSfmlChat();
+        TCP tcp;
+        tcp.runSfmlChat();
     }
     else if (choice == '2') {
         runBluetoothChat();
