@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <conio.h>
+#include "tcp.hpp"
 #include <vector>
 #include <iomanip>
 
@@ -15,139 +16,6 @@
 #include <ws2bth.h>
 #include <bluetoothapis.h>
 #endif
-
-class TCP {
-public:
-    void runSfmlChat() {
-    // Сокет для сетевого соединения
-    sf::TcpSocket socket;
-
-    // Получаем локальный IP-адрес компьютера
-    auto localIp = sf::IpAddress::getLocalAddress();
-    // Проверяем, успешно ли получен IP
-    if (!localIp.has_value())
-    {
-        std::cout << "Failed to get local IP address\n";
-        return;
-    }
-    // Извлекаем значение IP-адреса
-    sf::IpAddress ip = *localIp;
-
-    char type;
-
-    std::cout << "Enter type connecting: [c] - client, [s] - server\n";
-    std::cin  >> type;
-
-    if(type == 's')
-    {
-        // Создаем сервер
-        sf::TcpListener listener;
-        // Попытка прослушать порт 2000
-        if (listener.listen(2000) != sf::Socket::Status::Done)
-        {
-            std::cout << "Error listening on port!\n";
-            return;
-        }
-
-        std::cout << "Соединение...\n";
-
-        // Принимаем входящее соединение
-        if(listener.accept(socket) != sf::Socket::Status::Done)
-        {
-            std::cout << "Error!\n";
-        }
-    }
-    else if(type == 'c')
-    {
-        // Подключаемся к серверу по полученному IP и порту 2000
-        if(socket.connect(ip, 2000) != sf::Socket::Status::Done)
-        {
-            std::cout << "Error!\n";
-        }
-    }
-
-    // Получение имя пользователя для чата
-    std::string name;
-    std::cout << "Enter your name:\n";
-    std::cin  >> name;
-
-    socket.setBlocking(false);
-
-    std::string message = "";
-    sf::Packet  packet;
-
-    std::cout << "\n=== SFML Chat started ===\n";
-    std::cout << "Type your message and press Enter to send\n";
-    std::cout << "Type 'exit' to quit\n\n";
-
-    while (true)
-    {
-        // Проверка, была ли нажата клавиша
-        if (_kbhit())
-        {
-            // Считываем строку с сообщением
-            std::getline(std::cin, message);
-            
-            // Если сообщение не пустое
-            if (!message.empty())
-            {
-                // Проверка команду выхода
-                if (message == "exit" || message == "quit")
-                {
-                    break;
-                }
-
-                // Очищаем пакет от предыдущих данных
-                packet.clear();
-                // Упаковываем имя и сообщение в пакет
-                packet << name << message;
-
-                // Отправляем пакет через сокет
-                if (socket.send(packet) != sf::Socket::Status::Done)
-                {
-                    std::cout << "Error sending message!\n";
-                }
-                else
-                {
-                    std::cout << "You: " << message << '\n';
-                }
-
-                // Очищаем переменную сообщения
-                message = "";
-            }
-        }
-
-        // Принимаем данные через сокет
-        sf::Socket::Status status = socket.receive(packet);
-        // Если получено сообщение
-        if (status == sf::Socket::Status::Done)
-        {
-            // Переменные для распаковки данных
-            std::string nameRec;
-            std::string messageRec;
-
-            // Распаковываем имя и сообщение из пакета
-            if (packet >> nameRec >> messageRec)
-            {
-                // Выводим полученное сообщение
-                std::cout << nameRec << ": " << messageRec << '\n';
-            }
-        }
-        // Если соединение разорвано
-        else if (status == sf::Socket::Status::Disconnected)
-        {
-            std::cout << "Connection lost!\n";
-            break;
-        }
-
-        // Небольшая задержка
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-
-    std::cout << "SFML Chat ended.\n";
-}       
-};
-
 
 // BLUETOOTH чат (только для Windows)
 
@@ -489,18 +357,20 @@ void runBluetoothChat() {
 #endif
 
 int main() {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
     char choice;
     
     std::cout << "=== Chat Program ===\n";
     std::cout << "Select chat type:\n";
-    std::cout << "1. SFML Chat (TCP/IP)\n";
+    std::cout << "1. TCP Chat\n";
     std::cout << "2. Bluetooth Chat\n";
     std::cout << "Enter choice (1 or 2): ";
     std::cin >> choice;
     
     if (choice == '1') {
-        TCP tcp;
-        tcp.runSfmlChat();
+        TCPSocketHandler tcp;
+        tcp.run();
     }
     else if (choice == '2') {
         runBluetoothChat();
