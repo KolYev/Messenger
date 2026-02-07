@@ -29,5 +29,5 @@ private:
     SOCKET createServer();
     SOCKET connectToDevice(const BLUETOOTH_ADDRESS &addr, int port);
     void chatLoop(SOCKET sock, const std::string &username);
-    std::string wstringToString(const std::wstring &wstr);
+    std::string wstringToString(const std::wstring &wstr); // Конвертируем строку wstring (широкие символы) в string
 };
