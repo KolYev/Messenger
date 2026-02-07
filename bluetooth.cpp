@@ -95,3 +95,54 @@ std::vector<BluetoothDevice> BluetoothChat::discoverDevices() {
     
     return devices; // Возвращаем список найденных устройств
 }
+
+// Функция для создания Bluetooth сервера (слушающего сокета)
+SOCKET BluetoothChat::createServer() {
+    WSADATA wsaData;
+    // Инициализируем WinSock
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cout << "WSAStartup failed\n";
+        return INVALID_SOCKET;
+    }
+    
+    // Создаем Bluetooth сокет
+    // AF_BTH - семейство протоколов Bluetooth
+    // SOCK_STREAM - потоковый сокет (TCP-подобный)
+    // BTHPROTO_RFCOMM - протокол RFCOMM (последовательный порт поверх Bluetooth)
+    SOCKET serverSocket = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
+    if (serverSocket == INVALID_SOCKET) {
+        std::cout << "Socket creation failed\n";
+        WSACleanup();
+        return INVALID_SOCKET;
+    }
+    
+    // Настраиваем адрес для привязки
+    SOCKADDR_BTH sa = { 0 }; // Обнуляем структуру
+    sa.addressFamily = AF_BTH; // Семейство Bluetooth
+    sa.port = BT_PORT_ANY; // Автоматический выбор порта
+    
+    // Привязываем сокет к адресу
+    if (bind(serverSocket, (SOCKADDR*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+        std::cout << "Bind failed\n";
+        closesocket(serverSocket); // Закрываем сокет
+        WSACleanup(); // Очищаем WinSock
+        return INVALID_SOCKET;
+    }
+    
+    // Получаем информацию о порте
+    int len = sizeof(sa);
+    getsockname(serverSocket, (SOCKADDR*)&sa, &len);
+    
+    std::cout << "Bluetooth server started on port: " << sa.port << std::endl;
+    
+    // Начинаем прослушивание входящих соединений
+    if (listen(serverSocket, 1) == SOCKET_ERROR) {
+        std::cout << "Listen failed\n";
+        closesocket(serverSocket);
+        WSACleanup();
+        return INVALID_SOCKET;
+    }
+    
+    std::cout << "Waiting for Bluetooth connection...\n";
+    return serverSocket; // Возвращаем дескриптор серверного сокета
+}
