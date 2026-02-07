@@ -13,6 +13,7 @@
                 "/Fe:messenger.exe",
                 "main.cpp",
                 "tcp.cpp",
+                "bluetooth.cpp",
                 "/I",
                 "Libraries\\SFML-3.0.2\\include",
                 "/link",

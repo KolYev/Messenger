@@ -1,8 +1,8 @@
-#include <windows.h>
 #include <iostream>
-#include <conio.h> 
-#include "tcp.hpp" 
+#include <conio.h>
+#include "tcp.hpp"
 #include "bluetooth.hpp"
+
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);
