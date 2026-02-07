@@ -25,7 +25,7 @@ class BluetoothChat
 public:
     void run(); // Главная функция для запуска чата
 private:
-    std::vector<BluetoothDevice> discoverDevices();
+    std::vector<BluetoothDevice> discoverDevices(); // Поиск и вывод списка доступных Bluetooth устройств
     SOCKET createServer();
     SOCKET connectToDevice(const BLUETOOTH_ADDRESS &addr, int port);
     void chatLoop(SOCKET sock, const std::string &username);
