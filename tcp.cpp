@@ -38,3 +38,26 @@ bool TCPSocketHandler::startServer() {
 
     return true;
 }
+
+bool TCPSocketHandler::startClient() {
+    // Получаем локальный IP-адрес компьютера
+    auto localIp = sf::IpAddress::getLocalAddress();
+    // Проверяем, успешно ли получен IP
+    if (!localIp.has_value())
+    {
+        std::cout << "Ошибка получения IP адреса\n";
+        return false;
+    }
+    // Извлекаем значение IP-адреса
+    sf::IpAddress ip = *localIp;
+
+    // Подключаемся к серверу по полученному IP и порту 2000
+    if(socket.connect(ip, 2000) != sf::Socket::Status::Done)
+    {
+        std::cout << "Ошибка подключения к серверу!\n";
+        return false;
+    }
+
+    return true;
+    
+}
