@@ -7,7 +7,8 @@
 #include <vector>
 #include <iomanip>
 
-class TCPSocketHandler {
+class TCPSocketHandler
+{
 protected:
     sf::TcpSocket socket; // Сокет для сетевого соединения
     std::string username; // Получение имени пользователя для чата
@@ -16,21 +17,22 @@ public:
 private:
     bool startServer(); // Функция для запуска сервера
     bool startClient(); // Функция для запуска клиента
-    void chatLoop(); // Основной цикл для отправки и получения сообщений
+    void chatLoop();    // Основной цикл для отправки и получения сообщений
 };
 
-bool TCPSocketHandler::startServer() {
+bool TCPSocketHandler::startServer()
+{
     // Создаем сервер
     sf::TcpListener listener;
 
     if (listener.listen(2000) != sf::Socket::Status::Done)
-        {
-            std::cout << "Error listening on port!\n";
-            return false;
-        }
-    
+    {
+        std::cout << "Error listening on port!\n";
+        return false;
+    }
+
     // Принимаем входящее соединение
-    if(listener.accept(socket) != sf::Socket::Status::Done)
+    if (listener.accept(socket) != sf::Socket::Status::Done)
     {
         std::cout << "Error!\n";
         return false;
@@ -39,7 +41,8 @@ bool TCPSocketHandler::startServer() {
     return true;
 }
 
-bool TCPSocketHandler::startClient() {
+bool TCPSocketHandler::startClient()
+{
     // Получаем локальный IP-адрес компьютера
     auto localIp = sf::IpAddress::getLocalAddress();
     // Проверяем, успешно ли получен IP
@@ -52,17 +55,17 @@ bool TCPSocketHandler::startClient() {
     sf::IpAddress ip = *localIp;
 
     // Подключаемся к серверу по полученному IP и порту 2000
-    if(socket.connect(ip, 2000) != sf::Socket::Status::Done)
+    if (socket.connect(ip, 2000) != sf::Socket::Status::Done)
     {
         std::cout << "Ошибка подключения к серверу!\n";
         return false;
     }
 
     return true;
-    
 }
 
-void TCPSocketHandler::chatLoop() {
+void TCPSocketHandler::chatLoop()
+{
     socket.setBlocking(false);
 
     std::string message = "";
@@ -79,7 +82,7 @@ void TCPSocketHandler::chatLoop() {
         {
             // Считываем строку с сообщением
             std::getline(std::cin, message);
-            
+
             // Если сообщение не пустое
             if (!message.empty())
             {
@@ -137,5 +140,30 @@ void TCPSocketHandler::chatLoop() {
     }
 
     std::cout << "TCP чат закончился.\n";
+}
 
+void TCPSocketHandler::run()
+{
+    char type;
+
+    std::cout << "Выберите тип соединения: [c] - client, [s] - server\n";
+    std::cin >> type;
+    std::cin.ignore();
+
+    bool ok = false;
+    if (type == 's')
+        ok = startServer();
+    else if (type == 'c')
+        ok = startClient();
+    else
+    {
+        std::cout << "Неверный тип!\n";
+        return;
+    }
+    if (!ok)
+        return;
+    std::cout << "Введите ваше имя:\n";
+    std::cin >> username;
+    std::cin.ignore();
+    chatLoop();
 }
