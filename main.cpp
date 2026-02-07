@@ -49,6 +49,8 @@ public:
             return;
         }
 
+        std::cout << "Соединение...\n";
+
         // Принимаем входящее соединение
         if(listener.accept(socket) != sf::Socket::Status::Done)
         {

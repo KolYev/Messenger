@@ -18,3 +18,23 @@ private:
     bool startClient(); // Функция для запуска клиента
     void chatLoop(); // Основной цикл для отправки и получения сообщений
 };
+
+bool TCPSocketHandler::startServer() {
+    // Создаем сервер
+    sf::TcpListener listener;
+
+    if (listener.listen(2000) != sf::Socket::Status::Done)
+        {
+            std::cout << "Error listening on port!\n";
+            return false;
+        }
+    
+    // Принимаем входящее соединение
+    if(listener.accept(socket) != sf::Socket::Status::Done)
+    {
+        std::cout << "Error!\n";
+        return false;
+    }
+
+    return true;
+}
