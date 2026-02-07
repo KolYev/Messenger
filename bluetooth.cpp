@@ -146,3 +146,40 @@ SOCKET BluetoothChat::createServer() {
     std::cout << "Waiting for Bluetooth connection...\n";
     return serverSocket; // Возвращаем дескриптор серверного сокета
 }
+
+// Функция для подключения к Bluetooth устройству
+SOCKET BluetoothChat::connectToDevice(const BLUETOOTH_ADDRESS& address, int port = 1) {
+    WSADATA wsaData;
+    // Инициализируем WinSock
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cout << "WSAStartup failed\n";
+        return INVALID_SOCKET;
+    }
+    
+    // Создаем клиентский сокет
+    SOCKET clientSocket = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
+    if (clientSocket == INVALID_SOCKET) {
+        std::cout << "Socket creation failed\n";
+        WSACleanup();
+        return INVALID_SOCKET;
+    }
+    
+    // Настраиваем адрес для подключения
+    SOCKADDR_BTH sa = { 0 };
+    sa.addressFamily = AF_BTH; // Семейство Bluetooth
+    sa.btAddr = address.ullLong; // MAC-адрес целевого устройства
+    sa.port = port; // Порт для подключения
+    
+    // Подключаемся к устройству
+    std::cout << "Connecting to Bluetooth device...\n";
+    if (connect(clientSocket, (SOCKADDR*)&sa, sizeof(sa)) == SOCKET_ERROR) {
+        int error = WSAGetLastError(); // Получаем код ошибки
+        std::cout << "Connection failed with error: " << error << "\n";
+        closesocket(clientSocket);
+        WSACleanup();
+        return INVALID_SOCKET;
+    }
+    
+    std::cout << "Connected successfully!\n";
+    return clientSocket; // Возвращаем дескриптор подключенного сокета
+}

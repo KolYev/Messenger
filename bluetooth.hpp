@@ -27,7 +27,7 @@ public:
 private:
     std::vector<BluetoothDevice> discoverDevices(); // Поиск и вывод списка доступных Bluetooth устройств
     SOCKET createServer(); // Функция для создания Bluetooth сервера (слушающего сокета)
-    SOCKET connectToDevice(const BLUETOOTH_ADDRESS &addr, int port);
+    SOCKET connectToDevice(const BLUETOOTH_ADDRESS &addr, int port); // Функция для подключения к Bluetooth устройству
     void chatLoop(SOCKET sock, const std::string &username);
     std::string wstringToString(const std::wstring &wstr); // Конвертируем строку wstring (широкие символы) в string
 };
