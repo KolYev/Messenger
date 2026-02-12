@@ -1,6 +1,12 @@
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <winsock2.h>
+#include <windows.h>
+
 #include <iostream>
 #include <conio.h>
-#include "tcp.hpp"
+#include "udp.hpp"
 #include "bluetooth.hpp"
 
 int main() {
@@ -10,14 +16,14 @@ int main() {
     
     std::cout << "=== Chat Program ===\n";
     std::cout << "Select chat type:\n";
-    std::cout << "1. TCP Chat\n";
+    std::cout << "1. UDP Chat\n";
     std::cout << "2. Bluetooth Chat\n";
     std::cout << "Enter choice (1 or 2): ";
     std::cin >> choice;
     
     if (choice == '1') {
-        TCPSocketHandler tcp;
-        tcp.run();
+        UDPSocketHandler udp;
+        udp.run();
     }
     else if (choice == '2') {
         BluetoothChat bt; 
