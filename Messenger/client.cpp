@@ -7,24 +7,28 @@ using namespace std;
 
 int main()
 {
+    SetConsoleCP(65001);
+    SetConsoleOutputCP(65001);
+
     WSAData wsaData;
     (void)WSAStartup(MAKEWORD(2, 2), &wsaData);
 
-    SOCKET clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+    SOCKET client_socket = socket(AF_INET, SOCK_STREAM, 0);
 
-    sockaddr_in serverAddress;
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(4000);
-    InetPton(AF_INET, L"127.0.0.1", &serverAddress.sin_addr);
+    sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_port = htons(4000);
+    InetPton(AF_INET, L"127.0.0.1", &address.sin_addr);
 
-    connect(clientSocket, (struct sockaddr*)&serverAddress,
-        sizeof(serverAddress));
+    connect(client_socket, (struct sockaddr*)&address,
+        sizeof(address));
 
     char message[1024];
+    cout << "Сообщение получателю: ";
     cin.getline(message, sizeof(message));
-    send(clientSocket, message, (int)strlen(message), 0);
+    send(client_socket, message, (int)strlen(message), 0);
 
-    closesocket(clientSocket);
+    closesocket(client_socket);
     WSACleanup();
 
     return 0;
