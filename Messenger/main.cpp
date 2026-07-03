@@ -29,7 +29,16 @@ int main()
 
 	// подключение к клиенту
 	char buffer[1024] = { 0 };
-	recv(client_socket, buffer, sizeof(buffer), 0);
+	int bytes = 0;
+	int total = 0;
+
+	while ((bytes = recv(client_socket, buffer + total, sizeof(buffer) - total - 1, 0)) > 0) {
+		total += bytes;
+		if (buffer[total - 1] == '\n')
+			break;
+	}
+	buffer[total] = '\0';
+
 	cout << "Сообщение от клиента: " << buffer << endl;
 
 	closesocket(server_socket);
