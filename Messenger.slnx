@@ -3,5 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Messenger/Messenger.vcxproj" />
+  <Project Path="Messenger/Messenger.vcxproj" Id="2947270a-8bf1-4ac4-9f44-4089462724db" />
+  <Project Path="Client/Client.vcxproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
 </Solution>
